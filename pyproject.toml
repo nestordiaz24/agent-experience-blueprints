@@ -10,10 +10,14 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [{ name = "Agent Experience Blueprints contributors" }]
-dependencies = []
+dependencies = [
+    "fastapi>=0.116,<1",
+    "uvicorn[standard]>=0.35,<1",
+]
 
 [project.optional-dependencies]
 dev = [
+    "httpx>=0.28,<1",
     "jsonschema[format]>=4.23,<5",
     "mypy>=1.15,<2",
     "pytest>=8.3,<9",
@@ -22,10 +26,8 @@ dev = [
 ]
 
 [tool.setuptools]
-package-dir = { "" = "packages/agent_core" }
-
-[tool.setuptools.packages.find]
-where = ["packages/agent_core"]
+package-dir = { agent_core = "packages/agent_core/agent_core", agent_api = "apps/api/agent_api" }
+packages = ["agent_core", "agent_api"]
 
 [tool.pytest.ini_options]
 addopts = "-q"
@@ -42,4 +44,4 @@ select = ["E", "F", "I", "UP", "B", "ASYNC"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["agent_core"]
+packages = ["agent_core", "agent_api"]

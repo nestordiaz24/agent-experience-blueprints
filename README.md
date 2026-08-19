@@ -69,6 +69,14 @@ python -m pytest
 
 The first implemented slice is the shared `agent_core` package. It provides typed events and outputs, cooperative cancellation, a provider protocol, explicit JSON serialization, a versioned transport schema, and a synthetic three-stage record-reconciliation stream. See [the normalized event contract](docs/contracts.md) for ordering, terminal-event, versioning, and rendering rules.
 
+Run the local fake-provider API with:
+
+```powershell
+python -m uvicorn agent_api.main:app --reload
+```
+
+The health endpoint is `GET /healthz`. Submit `{ "message": "Reconcile the sample records" }` to `POST /v1/chat/stream` to receive normalized named Server-Sent Events. The local API is unauthenticated by design; authentication is added with the cloud-provider integration. See [the local streaming API guide](docs/api.md) for the request and wire format.
+
 ## Solution architecture
 
 ```mermaid

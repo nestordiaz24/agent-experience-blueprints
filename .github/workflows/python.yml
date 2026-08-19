@@ -20,5 +20,5 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
       - run: python -m ruff check packages tests
-      - run: python -m mypy packages/agent_core
+      - run: python -m mypy packages/agent_core apps/api
       - run: python -m pytest
