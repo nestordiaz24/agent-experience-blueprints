@@ -1,12 +1,14 @@
 """Deterministic synthetic provider for local development and contract tests."""
 
 from collections.abc import AsyncIterator, Iterable
+from typing import Literal
 
 from agent_core.cancellation import CancellationToken
 from agent_core.events import (
     AgentEvent,
     CitationEvent,
     DoneEvent,
+    ErrorEvent,
     FinalTextEvent,
     StatusEvent,
     StructuredResultEvent,
@@ -18,19 +20,27 @@ from agent_core.models import (
     Fact,
     Metric,
     ReconciliationSummary,
+    StatusItem,
+    StatusSummary,
+    TableColumn,
+    TableResult,
+    TableRow,
 )
+
+type FailureStage = Literal["ingesting", "reconciling", "reporting"]
 
 
 class FakeReconciliationProvider:
     """Emits a stable record-reconciliation workflow without cloud credentials."""
+
+    def __init__(self, failure_stage: FailureStage | None = None) -> None:
+        self._failure_stage = failure_stage
 
     async def stream(
         self,
         request: ConversationRequest,
         cancellation: CancellationToken,
     ) -> AsyncIterator[AgentEvent]:
-        del request
-
         for stage, message in (
             ("ingesting", "Reading synthetic records"),
             ("reconciling", "Comparing record identifiers and amounts"),
@@ -40,6 +50,17 @@ class FakeReconciliationProvider:
                 yield DoneEvent(reason="cancelled")
                 return
             yield StatusEvent(stage=stage, message=message)
+            if stage == self._failure_stage:
+                yield ErrorEvent(
+                    code="synthetic_provider_error",
+                    message="The synthetic reconciliation could not be completed.",
+                    retryable=True,
+                    correlation_id=(
+                        request.response_id or request.conversation_id or "fake-correlation-id"
+                    ),
+                )
+                yield DoneEvent(reason="error")
+                return
 
         summary = ReconciliationSummary(
             title="Synthetic record reconciliation",
@@ -75,6 +96,38 @@ class FakeReconciliationProvider:
             kind="reconciliation_summary",
             schema_version="1.0",
             data=summary,
+        )
+        yield StructuredResultEvent(
+            kind="table",
+            schema_version="1.0",
+            data=TableResult(
+                title="Records requiring review",
+                columns=(
+                    TableColumn(key="record_id", label="Record"),
+                    TableColumn(key="issue", label="Issue"),
+                ),
+                rows=(
+                    TableRow(cells=("SYN-004", "Amount differs")),
+                    TableRow(cells=("SYN-009", "Identifier missing")),
+                ),
+            ),
+        )
+        yield StructuredResultEvent(
+            kind="status_summary",
+            schema_version="1.0",
+            data=StatusSummary(
+                title="Reconciliation workflow",
+                overall_state="completed",
+                items=(
+                    StatusItem(label="Read records", state="completed"),
+                    StatusItem(label="Compare records", state="completed"),
+                    StatusItem(
+                        label="Prepare summary",
+                        state="completed",
+                        detail="Two records require review.",
+                    ),
+                ),
+            ),
         )
         yield FinalTextEvent(text=accumulated_text)
         yield DoneEvent(reason="completed")

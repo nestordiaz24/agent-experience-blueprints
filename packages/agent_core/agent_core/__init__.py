@@ -18,8 +18,14 @@ from agent_core.models import (
     Fact,
     Metric,
     ReconciliationSummary,
+    StatusItem,
+    StatusSummary,
+    TableColumn,
+    TableResult,
+    TableRow,
 )
 from agent_core.provider import AgentProvider
+from agent_core.serialization import event_to_dict, event_to_json
 
 __all__ = [
     "AgentEvent",
@@ -36,6 +42,13 @@ __all__ = [
     "Metric",
     "ReconciliationSummary",
     "StatusEvent",
+    "StatusItem",
+    "StatusSummary",
     "StructuredResultEvent",
+    "TableColumn",
+    "TableResult",
+    "TableRow",
     "TextDeltaEvent",
+    "event_to_dict",
+    "event_to_json",
 ]

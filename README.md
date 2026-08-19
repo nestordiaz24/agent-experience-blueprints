@@ -67,7 +67,7 @@ python -m pip install -e ".[dev]"
 python -m pytest
 ```
 
-The first implemented slice is the shared `agent_core` package. It provides typed events and outputs, cooperative cancellation, a provider protocol, and a synthetic three-stage record-reconciliation stream.
+The first implemented slice is the shared `agent_core` package. It provides typed events and outputs, cooperative cancellation, a provider protocol, explicit JSON serialization, a versioned transport schema, and a synthetic three-stage record-reconciliation stream. See [the normalized event contract](docs/contracts.md) for ordering, terminal-event, versioning, and rendering rules.
 
 ## Solution architecture
 

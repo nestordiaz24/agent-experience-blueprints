@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/agent-event-v1.schema.json",
+  "title": "Normalized agent event",
+  "oneOf": [
+    { "$ref": "#/$defs/statusEvent" },
+    { "$ref": "#/$defs/textDeltaEvent" },
+    { "$ref": "#/$defs/citationEvent" },
+    { "$ref": "#/$defs/structuredResultEvent" },
+    { "$ref": "#/$defs/finalTextEvent" },
+    { "$ref": "#/$defs/errorEvent" },
+    { "$ref": "#/$defs/doneEvent" }
+  ],
+  "$defs": {
+    "statusEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "stage", "message", "timestamp"],
+      "properties": {
+        "type": { "const": "status" },
+        "stage": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "textDeltaEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "delta", "accumulated_text"],
+      "properties": {
+        "type": { "const": "text_delta" },
+        "delta": { "type": "string", "minLength": 1 },
+        "accumulated_text": { "type": "string", "minLength": 1 }
+      }
+    },
+    "citationEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "citation"],
+      "properties": {
+        "type": { "const": "citation" },
+        "citation": { "$ref": "#/$defs/citation" }
+      }
+    },
+    "structuredResultEvent": {
+      "oneOf": [
+        { "$ref": "#/$defs/reconciliationResultEvent" },
+        { "$ref": "#/$defs/tableResultEvent" },
+        { "$ref": "#/$defs/statusSummaryResultEvent" }
+      ]
+    },
+    "reconciliationResultEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "kind", "schema_version", "data"],
+      "properties": {
+        "type": { "const": "structured_result" },
+        "kind": { "const": "reconciliation_summary" },
+        "schema_version": { "const": "1.0" },
+        "data": { "$ref": "#/$defs/reconciliationSummary" }
+      }
+    },
+    "tableResultEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "kind", "schema_version", "data"],
+      "properties": {
+        "type": { "const": "structured_result" },
+        "kind": { "const": "table" },
+        "schema_version": { "const": "1.0" },
+        "data": { "$ref": "#/$defs/tableResult" }
+      }
+    },
+    "statusSummaryResultEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "kind", "schema_version", "data"],
+      "properties": {
+        "type": { "const": "structured_result" },
+        "kind": { "const": "status_summary" },
+        "schema_version": { "const": "1.0" },
+        "data": { "$ref": "#/$defs/statusSummary" }
+      }
+    },
+    "finalTextEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "const": "final_text" },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    },
+    "errorEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "code", "message", "retryable", "correlation_id"],
+      "properties": {
+        "type": { "const": "error" },
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean" },
+        "correlation_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "doneEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "reason"],
+      "properties": {
+        "type": { "const": "done" },
+        "reason": { "enum": ["completed", "cancelled", "error"] }
+      }
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "url", "source_type"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "source_type": { "enum": ["synthetic", "web", "work"] }
+      }
+    },
+    "reconciliationSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "status", "metrics", "facts"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["matched", "review_required", "failed"] },
+        "metrics": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/metric" }
+        },
+        "facts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fact" }
+        }
+      }
+    },
+    "tableResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "columns", "rows", "truncated"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/tableColumn" }
+        },
+        "rows": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/tableRow" }
+        },
+        "truncated": { "type": "boolean" }
+      }
+    },
+    "tableColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "label"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "tableRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cells"],
+      "properties": {
+        "cells": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "statusSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "overall_state", "items"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "overall_state": { "enum": ["in_progress", "completed", "failed"] },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/statusItem" }
+        }
+      }
+    },
+    "statusItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "state", "detail"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "state": { "enum": ["pending", "in_progress", "completed", "failed"] },
+        "detail": { "type": ["string", "null"] }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value", "trend"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 },
+        "trend": { "enum": ["up", "down", "neutral"] }
+      }
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
