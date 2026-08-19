@@ -55,6 +55,20 @@ All examples use synthetic data and generic branding so the repository can be pu
 | Testing | Pytest, Playwright, and contract tests | Backend, browser, streaming, cards, and cross-client behavior |
 | Observability | OpenTelemetry + Application Insights | Correlation, latency, failures, and stream diagnostics |
 
+## Local development
+
+The current implementation targets Python 3.12. Web samples will target Node.js 22 LTS when they are introduced. The deterministic fake provider requires no Azure subscription, tenant, license, or cloud credentials.
+
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+python -m pytest
+```
+
+The first implemented slice is the shared `agent_core` package. It provides typed events and outputs, cooperative cancellation, a provider protocol, and a synthetic three-stage record-reconciliation stream.
+
 ## Solution architecture
 
 ```mermaid
@@ -279,4 +293,4 @@ Reviewed August 19, 2026:
 
 ## Status
 
-Planning. See `IMPLEMENTATION_PLAN.md` for milestones, work items, acceptance criteria, risks, and the proposed release sequence.
+Milestones 0 and 1 are in progress. The repository foundation and initial shared event contracts are implemented; web, cloud-provider, and Teams adapters remain planned. See `IMPLEMENTATION_PLAN.md` for milestones, work items, acceptance criteria, risks, and the proposed release sequence.
